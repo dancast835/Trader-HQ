@@ -1,8 +1,24 @@
-from fastapi import FastAPI
 import uvicorn
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from service.strategy_vault import *
+from service.scheduler import *
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    configure_scheduler()
+    scheduler.start()
+
+    print("Trader HQ scheduler started")
+
+    yield
+
+    scheduler.shutdown(wait=False)
+    print("Trader HQ scheduler stopped")
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -12,14 +28,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
+#------------------------------------- Orders -------------------------------------------
+def place_order(order):
+    create_order(order)
 
-def home():
-    return {"message": "Trader HQ"}
+def close_order():
+    pass
 
-@app.get("/greetings")
-def greetings():
-    return {"message": "Hello React"}
 
 #------------------------------------- Display -------------------------------------------
 def account_details():
@@ -47,7 +62,7 @@ def trading_view_access():
 
     #provide access to tradingview charts for selected stock
 
-def send_positions():
+def all_open_positions():
     pass
 
     #display recent positions
@@ -56,19 +71,6 @@ def manage_watchlist():
     pass
 
     #manage and display watchlist
-
-#------------------------------------- Orders -------------------------------------------
-def send_order():
-    pass
-
-    #call strategy, get data and pass it to order builder
-
-    #call order_builder to organize JSON from strategies
-
-    #call create_order from alpaca_trading.py and pass in JSON from order builder
-
-def close_order():
-    pass
 
 
 

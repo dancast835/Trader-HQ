@@ -1,6 +1,4 @@
 import os
-from os import name
-
 import requests
 from dotenv import load_dotenv
 from alpaca.trading.client import TradingClient
@@ -22,33 +20,13 @@ headers = {
     "accept": "application/json",
     "content-type": "application-json"
 }
-
-#test
-stop_price = 0
-take_profit = 0
-
-#------------------------------------- Account -------------------------------------------
-def get_account():
-    pass
-
-def get_assets():
-    pass
-
+#TODO: fix header issue
 #------------------------------------- Orders -------------------------------------------
-#TODO: update to take inputs
-def create_order():
+def create_order(order):
     new_order = requests.post(
         f"{BASE_URL}/orders",
         headers=headers,
-        json={
-            "time_in_force": "day",
-            "type": "market",
-            "side": "buy",
-            "symbol": "TSLA",
-            "qty": "1",
-            "stop_loss": {stop_price},
-            "take_profit": {take_profit}
-        },)
+        json=order)
 
     new_order.raise_for_status()
     return new_order
@@ -113,12 +91,15 @@ def delete_symbol():
     return delete_asset
 
 def get_whole_watchlist():
-    watchlist = requests.get(
+    response = requests.get(
         f"{BASE_URL}/watchlists/{watchlist_id}",
         headers=headers,
         )
 
-    return watchlist.text
+    response.raise_for_status()
+    watchlist = response.json()
+
+    return watchlist
 
 #TODO: complete
 def delete_watchlist():
@@ -126,7 +107,3 @@ def delete_watchlist():
 
 def save_watchlist_details():
     pass
-
-data = get_whole_watchlist()
-
-print(data)
