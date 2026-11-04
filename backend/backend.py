@@ -1,8 +1,24 @@
-from fastapi import FastAPI
 import uvicorn
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from service.strategy_vault import *
+from service.scheduler import *
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    configure_scheduler()
+    scheduler.start()
+
+    print("Trader HQ scheduler started")
+
+    yield
+
+    scheduler.shutdown(wait=False)
+    print("Trader HQ scheduler stopped")
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -12,14 +28,49 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
+#------------------------------------- Orders -------------------------------------------
+def place_order(order):
+    create_order(order)
 
-def home():
-    return {"message": "Trader HQ"}
+def close_order():
+    pass
 
-@app.get("/greetings")
-def greetings():
-    return {"message": "Hello React"}
+
+#------------------------------------- Display -------------------------------------------
+def account_details():
+    pass
+
+    #display account details like balance, etc...
+
+def strategies():
+    pass
+
+    #display strategies and rules
+
+def trade_history():
+    pass
+
+    #get data from database to display stats from account
+
+def trading_news():
+    pass
+
+    #display current news for specific stocks from api
+
+def trading_view_access():
+    pass
+
+    #provide access to tradingview charts for selected stock
+
+def all_open_positions():
+    pass
+
+    #display recent positions
+
+def manage_watchlist():
+    pass
+
+    #manage and display watchlist
 
 
 
